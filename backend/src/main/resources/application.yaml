@@ -1,0 +1,26 @@
+spring:
+  application:
+    name: ExposeIT
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ExposeIT
+    username: postgres
+    password: 9896%Goswami
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  elasticsearch:
+    uris: https://exposeit-c3185a.es.asia-south1.gcp.elastic.cloud:443
+    api-key: XzVYUmk1NEJxVU16Tk1QaGh5M0Q6VW12OU0ta3BPMWNLdnIya3NWQ3Zqdw==
+
+application:
+  security:
+    jwt: ";w{28etjQiiJ.Q--Gu42fU=;D}xa]>BLYpBP(HnUw/}"
+    jwt-expiration: 900000  #15 mins
+    refresh-expiration: 1296000000 #15 days
