@@ -13,34 +13,33 @@ interface PostResponse {
   authorName: string;
   latitude: number;
   longitude: number;
-  status: string;
-  upvotes: number; // Mapped from the new No Slop backend
+  likes: number; // Synced with Java backend
   categories?: Category[];
-  mediaUrls?: string[];
-  createdAt?: string; // Spring Boot Instant returns an ISO-8601 string
+  mediaFiles?: string[]; // Synced with Java backend
+  createdAt?: string;
 }
 
 type FeedMode = "trending" | "nearby" | "filter" | "search";
 
 const CATEGORIES = [
+  "EDUCATION",
+  "GARBAGE",
   "INFRASTRUCTURE",
-  "SANITATION",
   "WATER_SUPPLY",
-  "ELECTRICITY",
-  "PUBLIC_TRANSPORT",
   "CORRUPTION",
+  "PUBLIC_TRANSPORT",
   "OTHER"
 ] as const;
 type Category = (typeof CATEGORIES)[number];
 
 const CATEGORY_META: Record<Category, { label: string; color: string; bg: string; dot: string }> = {
-  INFRASTRUCTURE:   { label: "Infrastructure", color: "text-violet-700",  bg: "bg-violet-100",  dot: "bg-violet-500" },
-  SANITATION:       { label: "Sanitation",     color: "text-amber-700",   bg: "bg-amber-100",   dot: "bg-amber-500" },
-  WATER_SUPPLY:     { label: "Water Supply",   color: "text-blue-700",    bg: "bg-blue-100",    dot: "bg-blue-500" },
-  ELECTRICITY:      { label: "Electricity",    color: "text-yellow-700",  bg: "bg-yellow-100",  dot: "bg-yellow-500" },
-  PUBLIC_TRANSPORT: { label: "Transport",      color: "text-emerald-700", bg: "bg-emerald-100", dot: "bg-emerald-500" },
-  CORRUPTION:       { label: "Corruption",     color: "text-red-700",     bg: "bg-red-100",     dot: "bg-red-500" },
-  OTHER:            { label: "Other",          color: "text-slate-600",   bg: "bg-slate-100",   dot: "bg-slate-400" },
+  EDUCATION: { label: "Education", color: "text-violet-700",  bg: "bg-violet-100",  dot: "bg-violet-500" },
+  GARBAGE: { label: "Garbage", color: "text-amber-700",   bg: "bg-amber-100",   dot: "bg-amber-500" },
+  INFRASTRUCTURE: { label: "Infrastructure", color: "text-blue-700",    bg: "bg-blue-100",    dot: "bg-blue-500" },
+  WATER_SUPPLY: { label: "Water Supply", color: "text-yellow-700",  bg: "bg-yellow-100",  dot: "bg-yellow-500" },
+  CORRUPTION: { label: "Corruption", color: "text-emerald-700", bg: "bg-emerald-100", dot: "bg-emerald-500" },
+  PUBLIC_TRANSPORT: { label: "Public Transport", color: "text-red-700",     bg: "bg-red-100",     dot: "bg-red-500" },
+  OTHER: { label: "Other", color: "text-slate-600",   bg: "bg-slate-100",   dot: "bg-slate-400" },
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -77,7 +76,6 @@ function PostCard({ post }: { post: PostResponse }) {
       <div className="flex items-start justify-between gap-3 mb-2">
         <h3 className="font-bold text-gray-900 text-base leading-snug">{post.title}</h3>
         <div className="flex flex-wrap gap-1 shrink-0">
-          <span className="text-[10px] font-bold tracking-wider px-2 py-1 rounded bg-gray-900 text-white uppercase">{post.status}</span>
           {post.categories?.map((c) => <CategoryPill key={c} cat={c} />)}
         </div>
       </div>
@@ -101,7 +99,7 @@ function PostCard({ post }: { post: PostResponse }) {
         </div>
         <div className="flex items-center gap-2 shrink-0">
           <span className="font-bold text-indigo-600 tabular-nums bg-indigo-50 px-2 py-1 rounded-md">
-            ⇧ {post.upvotes?.toLocaleString() ?? 0}
+            ⇧ {post.likes?.toLocaleString() ?? 0}
           </span>
         </div>
       </div>
@@ -124,7 +122,7 @@ export default function DashboardPage() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [postCategory, setPostCategory] = useState<Category>("OTHER");
-  const [initialLikes, setInitialLikes] = useState(0); // Dev backdoor restored
+  const [initialLikes, setInitialLikes] = useState(0);
   const [submitting, setSubmitting] = useState(false);
 
   const [toast, setToast] = useState<{ msg: string; kind: "ok" | "err" } | null>(null);
@@ -148,7 +146,8 @@ export default function DashboardPage() {
           setFeedLoading(false);
           return;
         }
-        url = `http://localhost:8080/api/posts/search?q=${encodeURIComponent(searchQuery)}`;
+        // FIXED: Uses 'keyword=' to match your PostController.java
+        url = `http://localhost:8080/api/posts/search?keyword=${encodeURIComponent(searchQuery)}`;
       } else {
         if (selectedCategories.size === 0) {
           setFeed([]);
@@ -188,8 +187,8 @@ export default function DashboardPage() {
         latitude: location.lat,
         longitude: location.lon,
         categories: [postCategory],
-        mediaUrls: [],
-        likes: initialLikes // Dev backdoor sent to backend
+        mediaFiles: [], // FIXED: Uses mediaFiles to match PostCreateRequest.java
+        likes: initialLikes
       };
 
       const res = await fetch("http://localhost:8080/api/posts", {
@@ -305,7 +304,6 @@ export default function DashboardPage() {
                 </div>
               </div>
 
-              {/* Dev backdoor: Initial Likes */}
               <div className="flex items-center gap-3 bg-gray-50 rounded-lg border border-gray-200 px-3 py-2">
                 <label className="text-xs font-medium text-gray-500 flex-1">Starting upvotes</label>
                 <input

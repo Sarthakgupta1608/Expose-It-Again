@@ -27,4 +27,6 @@ public class PostCreateRequest {
     private Set<PostCategory> categories;
 
     private List<String> mediaFiles;
+
+    private Integer likes;
 }

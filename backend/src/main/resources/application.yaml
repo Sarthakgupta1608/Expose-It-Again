@@ -17,7 +17,7 @@ spring:
         format_sql: true
   elasticsearch:
     uris: https://exposeit-c3185a.es.asia-south1.gcp.elastic.cloud:443
-    api-key: XzVYUmk1NEJxVU16Tk1QaGh5M0Q6VW12OU0ta3BPMWNLdnIya3NWQ3Zqdw==
+    api-key: WlpVRmpKNEJxVU16Tk1QaHFDXzk6cjBaR1hQeW03dnVuYlA2aGJxSDltUQ==
 
 application:
   security:

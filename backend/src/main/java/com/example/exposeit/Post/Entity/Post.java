@@ -52,6 +52,7 @@ public class Post {
     @Column(updatable = false, nullable = false)
     private Instant createdAt;
 
+    @Builder.Default
     @Column(nullable = false, columnDefinition = "INT DEFAULT 0")
     private Integer likes=0;
 }

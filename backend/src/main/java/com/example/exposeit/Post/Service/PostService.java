@@ -43,6 +43,7 @@ public class PostService {
                 .mediaFiles(request.getMediaFiles())
                 .categories(request.getCategories())
                 .author(author)
+                .likes(request.getLikes() != null? request.getLikes() : 0)
                 .build();
 
         Post savedPost = postRepository.saveAndFlush(post);
