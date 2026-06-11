@@ -1,0 +1,71 @@
+{
+  "properties": {
+    "id": {
+      "type": "keyword"
+    },
+    "title": {
+      "type": "text",
+      "analyzer": "standard",
+      "fields": {
+        "autocomplete": {
+          "type": "text",
+          "analyzer": "autocomplete_analyzer",
+          "search_analyzer": "standard"
+        },
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "description": {
+      "type": "text",
+      "analyzer": "standard",
+      "fields": {
+        "autocomplete": {
+          "type": "text",
+          "analyzer": "autocomplete_analyzer",
+          "search_analyzer": "standard"
+        },
+        "keyword": {
+          "type": "keyword",
+          "ignore_above": 256
+        }
+      }
+    },
+    "authorName": {
+      "type": "keyword"
+    },
+    "latitude": {
+      "type": "double"
+    },
+    "longitude": {
+      "type": "double"
+    },
+    "geohash": {
+      "type": "keyword"
+    },
+    "geohashPrefix": {
+      "type": "keyword"
+    },
+    "categories": {
+      "type": "keyword",
+      "fields": {
+        "autocomplete": {
+          "type": "text",
+          "analyzer": "autocomplete_analyzer",
+          "search_analyzer": "standard"
+        }
+      }
+    },
+    "mediaFiles": {
+      "type": "keyword"
+    },
+    "likes": {
+      "type": "integer"
+    },
+    "createdAtEpoch": {
+      "type": "long"
+    }
+  }
+}
