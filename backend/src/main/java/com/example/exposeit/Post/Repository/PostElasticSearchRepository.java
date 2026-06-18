@@ -16,6 +16,9 @@ public interface PostElasticSearchRepository extends ElasticsearchRepository<Pos
 
     List<PostDocument> findByCategoriesIn(Set<String> categories, PageRequest pageRequest);
 
-    @Query("{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"title^3\", \"description\"], \"fuzziness\": \"AUTO\"}}")
+    @Query("{\"bool\": {\"should\": [" +
+            "{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"title.autocomplete^3\", \"description.autocomplete\", \"categories.autocomplete^2\"], \"type\": \"best_fields\"}}," +
+            "{\"multi_match\": {\"query\": \"?0\", \"fields\": [\"title^3\", \"description\", \"categories^2\"], \"type\": \"best_fields\", \"fuzziness\": \"AUTO\"}}" +
+            "]}}")
     Page<PostDocument> searchByKeyword(String keyword, Pageable pageable);
 }

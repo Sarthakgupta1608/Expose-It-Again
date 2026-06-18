@@ -3,14 +3,14 @@ spring:
     name: ExposeIT
   datasource:
     url: jdbc:postgresql://localhost:5432/ExposeIT
-    username: postgres
-    password: 9896%Goswami
+    username: Sarthak
+    password: 12345678
     driver-class-name: org.postgresql.Driver
   jpa:
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
-      ddl-auto: create-drop
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:
