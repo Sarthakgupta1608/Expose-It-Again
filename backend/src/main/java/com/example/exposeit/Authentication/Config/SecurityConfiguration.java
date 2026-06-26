@@ -1,5 +1,6 @@
 package com.example.exposeit.Authentication.Config;
 
+import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -45,6 +46,11 @@ public class SecurityConfiguration {
                                 .requestMatchers("/actuator/health").permitAll()
                                 .anyRequest()
                                 .authenticated()
+                )
+                .exceptionHandling(ex -> ex
+                                .authenticationEntryPoint((request, response, authException) -> {
+                                    response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+                                })
                 )
                 .sessionManagement(
                         request -> request.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

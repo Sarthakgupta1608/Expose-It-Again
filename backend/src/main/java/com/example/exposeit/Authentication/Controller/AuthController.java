@@ -63,6 +63,7 @@ public class AuthController {
                     .status(HttpStatus.OK)
                     .body("Refreshed");
         } catch (Exception e){
+            authenticationService.logout(refreshToken, response);
             return ResponseEntity
                     .status(HttpStatus.UNAUTHORIZED)
                     .body(e.getMessage());
