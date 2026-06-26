@@ -1,0 +1,104 @@
+services:
+  postgres:
+    image: postgres:15-alpine       #postgres version 15 on the alpine version of linux distribution which is light weight
+    container_name: exposeit-postgres       #to identify if left empty will be random by docker itself
+    environment:
+      POSTGRES_USER: exposeit_user_hakim
+      POSTGRES_PASSWORD: hakim_op_in_the_chat
+      POSTGRES_DB: exposeit_database
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data         #store database data on the host machine that is running docker by default in the docker directory itself
+    networks:
+      - exposeit-network                 #lets services talk to each other in dockers completely isolated environment
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U exposeit_user_hakim -d exposeit_database"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:9.4.2-amd64
+    container_name: exposeit-elasticsearch
+    environment:
+      discovery.type: single-node              #no need to create clusters of nodes single is enough for development
+      xpack.security.enabled: false            #removes authentication and tls for easy development or else need username and passwords
+      ES_JAVA_OPTS: "-Xms512m -Xmx512m"         #caps memory usage at 512mb min and max both
+    ports:
+      - "9200:9200"
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    networks:
+      - exposeit-network                  #put elastic search on the same network as everything else
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:9200 || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:9.4.2
+    container_name: exposeit-kibana
+    ports:
+      - "5601:5601"
+    environment:
+      ELASTICSEARCH_HOSTS: http://elasticsearch:9200
+    depends_on:
+      elasticsearch:
+        condition: service_healthy
+    networks:
+      - exposeit-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: exposeit-backend
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      elasticsearch:
+        condition: service_healthy
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/exposeit_database
+      SPRING_DATASOURCE_USERNAME: exposeit_user_hakim                           #same as the above postgres continer
+      SPRING_DATASOURCE_PASSWORD: hakim_op_in_the_chat                          #same as the above postgres continer
+      SPRING_ELASTICSEARCH_URIS: http://elasticsearch:9200
+    networks:
+      - exposeit-network
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 10s
+      retries: 15
+      start_period: 30s
+
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: exposeit-frontend
+    ports:
+      - "3000:3000"
+    depends_on:
+      backend:
+        condition: service_healthy
+    networks:
+      - exposeit-network
+
+
+volumes:
+  pgdata:
+  esdata:
+
+
+networks:
+  exposeit-network:
+    driver: bridge

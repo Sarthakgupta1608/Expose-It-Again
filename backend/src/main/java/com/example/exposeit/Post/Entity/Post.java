@@ -38,13 +38,13 @@ public class Post {
     @Column(name = "media_url")
     private List<String> mediaFiles;
 
-    @ElementCollection(targetClass = PostCategory.class, fetch = FetchType.EAGER)
+    @ElementCollection(targetClass = PostCategory.class, fetch = FetchType.LAZY)
     @CollectionTable(name = "post_categories", joinColumns = @JoinColumn(name = "post_id"))
     @Enumerated(EnumType.STRING)
     @Column(name = "category", nullable = false)
     private Set<PostCategory> categories;
 
-    @ManyToOne(fetch = FetchType.EAGER, optional = false)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "author_id", nullable = false, foreignKey = @ForeignKey(name = "fk_post_author"))
     private User author;
 

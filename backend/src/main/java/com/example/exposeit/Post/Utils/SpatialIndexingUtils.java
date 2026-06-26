@@ -20,7 +20,7 @@ public class SpatialIndexingUtils {
         return GeoHash.geoHashStringWithCharacterPrecision(
                 latitude,
                 longitude,
-                7
+                4
         );
     }
 

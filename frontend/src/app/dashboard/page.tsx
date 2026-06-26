@@ -155,6 +155,7 @@ export default function DashboardPage() {
           return;
         }
         const params = [...selectedCategories].map((c) => `categories=${c}`).join("&");
+        console.log(params);
         url = `http://localhost:8080/api/posts/filter?${params}`;
       }
 

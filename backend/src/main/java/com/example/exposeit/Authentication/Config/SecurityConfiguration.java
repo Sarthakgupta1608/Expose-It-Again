@@ -40,8 +40,9 @@ public class SecurityConfiguration {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(
-                        request -> request.requestMatchers("/api/auth/**")
-                                .permitAll()
+                        request -> request
+                                .requestMatchers("/api/auth/**").permitAll()
+                                .requestMatchers("/actuator/health").permitAll()
                                 .anyRequest()
                                 .authenticated()
                 )
