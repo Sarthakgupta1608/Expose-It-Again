@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import dynamic from "next/dynamic";
+import api from "../../lib/axios";
 
 const MapPicker = dynamic(() => import("../../components/MapPicker"), { ssr: false });
 
@@ -13,9 +14,9 @@ interface PostResponse {
   authorName: string;
   latitude: number;
   longitude: number;
-  likes: number; // Synced with Java backend
+  likes: number;
   categories?: Category[];
-  mediaFiles?: string[]; // Synced with Java backend
+  mediaFiles?: string[];
   createdAt?: string;
 }
 
@@ -137,17 +138,16 @@ export default function DashboardPage() {
     try {
       let url = "";
       if (feedMode === "trending") {
-        url = `http://localhost:8080/api/posts/trending`;
+        url = `/posts/trending`;
       } else if (feedMode === "nearby") {
-        url = `http://localhost:8080/api/posts/nearby/trending?lat=${location.lat}&lon=${location.lon}`;
+        url = `/posts/nearby/trending?lat=${location.lat}&lon=${location.lon}`;
       } else if (feedMode === "search") {
         if (!searchQuery.trim()) {
           setFeed([]);
           setFeedLoading(false);
           return;
         }
-        // FIXED: Uses 'keyword=' to match your PostController.java
-        url = `http://localhost:8080/api/posts/search?keyword=${encodeURIComponent(searchQuery)}`;
+        url = `/posts/search?keyword=${encodeURIComponent(searchQuery)}`;
       } else {
         if (selectedCategories.size === 0) {
           setFeed([]);
@@ -155,13 +155,12 @@ export default function DashboardPage() {
           return;
         }
         const params = [...selectedCategories].map((c) => `categories=${c}`).join("&");
-        console.log(params);
-        url = `http://localhost:8080/api/posts/filter?${params}`;
+        url = `/posts/filter?${params}`;
       }
 
-      const res = await fetch(url, { credentials: "include" });
-      if (!res.ok) throw new Error(`Server returned ${res.status}`);
-      const data: PostResponse[] = await res.json();
+      // Uses the axios instance — the response interceptor will automatically
+      // call /auth/refresh on 401 and retry the request, invisible to the user.
+      const { data } = await api.get<PostResponse[]>(url);
       setFeed(data);
     } catch (e: unknown) {
       const msg = e instanceof Error ? e.message : "Unknown error";
@@ -188,21 +187,12 @@ export default function DashboardPage() {
         latitude: location.lat,
         longitude: location.lon,
         categories: [postCategory],
-        mediaFiles: [], // FIXED: Uses mediaFiles to match PostCreateRequest.java
-        likes: initialLikes
+        mediaFiles: [],
+        likes: initialLikes,
       };
 
-      const res = await fetch("http://localhost:8080/api/posts", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-        credentials: "include",
-      });
-
-      if (!res.ok) {
-        const err = await res.text();
-        throw new Error(err);
-      }
+      // Uses the axios instance — refresh + retry happens automatically on 401.
+      await api.post("/posts", payload);
 
       setTitle("");
       setDescription("");

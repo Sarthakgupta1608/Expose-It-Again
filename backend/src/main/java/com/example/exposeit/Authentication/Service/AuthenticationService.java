@@ -48,7 +48,6 @@ public class AuthenticationService {
     }
 
     public void register(AuthRegister request){
-        System.out.println(request.getUserName() + " " + request.getPassword());
         Optional<User> userByUsername = userRepository.findByUserName(request.getUserName());
         Optional<User> userByEmail = userRepository.findByEmail(request.getEmail());
 
@@ -69,7 +68,6 @@ public class AuthenticationService {
     }
 
     public void login(AuthRequest request, HttpServletResponse response){
-        System.out.println(request.getUserName() + " " + request.getPassword());
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getUserName(),
@@ -94,7 +92,7 @@ public class AuthenticationService {
         User user = validToken.getUser();
         String newAccessToken = jwtService.generateToken(user);
 
-        Cookie jwtCookie = createTokenCookie("access_token", newAccessToken, JwtExpiration);
+        Cookie jwtCookie = createTokenCookie("access_token", newAccessToken, JwtExpiration/1000);
         response.addCookie(jwtCookie);
     }
 

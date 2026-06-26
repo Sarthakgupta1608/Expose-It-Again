@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "../../lib/axios";
+import { AxiosError } from "axios";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -18,23 +20,16 @@ export default function RegisterPage() {
     setMessage("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/register", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userName, email, password }),
-      });
-
-      const data = await response.text();
-
-      if (!response.ok) {
-        throw new Error(data || "Registration failed");
-      }
+      await api.post("/auth/register", { userName, email, password });
 
       setMessage("Registration successful! Redirecting to login...");
       setTimeout(() => router.push("/login"), 1500);
-
-    } catch (err: any) {
-      setError(err.message);
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        setError(err.response?.data ?? err.message ?? "Registration failed");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
   };
 

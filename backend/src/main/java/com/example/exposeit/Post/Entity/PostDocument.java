@@ -15,7 +15,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-@Document(indexName = "posts", createIndex = false)
+@Document(indexName = "posts", createIndex = true)
 public class PostDocument {
     @Id
     private UUID id;

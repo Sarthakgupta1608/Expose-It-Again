@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import api from "../../lib/axios";
+import { AxiosError } from "axios";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -15,24 +17,17 @@ export default function LoginPage() {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/auth/login", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include", // CRITICAL: This allows the browser to accept the cookies!
-        body: JSON.stringify({ userName, password }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.text();
-        throw new Error(errorData || "Invalid credentials");
-      }
+      await api.post("/auth/login", { userName, password });
 
       // Cookies are now set in the browser. Route to the secure area!
       router.push("/dashboard");
-      router.refresh(); // Forces Next.js to re-evaluate the proxy state
-
-    } catch (err: any) {
-      setError(err.message);
+      router.refresh(); // Forces Next.js to re-evaluate the middleware state
+    } catch (err: unknown) {
+      if (err instanceof AxiosError) {
+        setError(err.response?.data ?? err.message ?? "Invalid credentials");
+      } else {
+        setError("Something went wrong. Please try again.");
+      }
     }
   };
 
