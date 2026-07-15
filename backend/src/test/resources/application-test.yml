@@ -1,0 +1,25 @@
+spring:
+  application:
+    name: ExposeIT-Test
+  datasource:
+    url: jdbc:postgresql://localhost:5432/exposeit_test
+    username: test
+    password: test
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+  elasticsearch:
+    uris: http://localhost:9200
+
+application:
+  security:
+    jwt: "test-jwt-secret-key-that-is-long-enough-to-be-secure-32-bytes-exposeit"
+    jwt-expiration: 3600000
+    refresh-expiration: 86400000
