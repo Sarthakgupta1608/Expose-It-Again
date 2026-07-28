@@ -119,6 +119,14 @@ export default function DashboardPage() {
 
   const [selectedCategories, setSelectedCategories] = useState<Set<Category>>(new Set());
   const [searchQuery, setSearchQuery] = useState("");
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState("");
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 300);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
@@ -132,7 +140,7 @@ export default function DashboardPage() {
     setTimeout(() => setToast(null), 3500);
   };
 
-  const fetchFeed = useCallback(async () => {
+  const fetchFeed = useCallback(async (queryOverride?: string) => {
     setFeedLoading(true);
     setFeedError(null);
     try {
@@ -142,7 +150,8 @@ export default function DashboardPage() {
       } else if (feedMode === "nearby") {
         url = `/posts/nearby/trending?lat=${location.lat}&lon=${location.lon}`;
       } else if (feedMode === "search") {
-        if (!searchQuery.trim()) {
+        const q = queryOverride !== undefined ? queryOverride : debouncedSearchQuery;
+        if (!q.trim()) {
           setFeed([]);
           setFeedLoading(false);
           return;
@@ -169,13 +178,11 @@ export default function DashboardPage() {
     } finally {
       setFeedLoading(false);
     }
-  }, [feedMode, location.lat, location.lon, selectedCategories, searchQuery]);
+  }, [feedMode, location.lat, location.lon, selectedCategories, debouncedSearchQuery]);
 
   useEffect(() => {
-    if (feedMode !== "search" || searchQuery.trim() !== "") {
-      void fetchFeed();
-    }
-  }, [fetchFeed, feedMode]);
+    void fetchFeed();
+  }, [fetchFeed, feedMode, debouncedSearchQuery]);
 
   const handleCreatePost = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -345,10 +352,10 @@ export default function DashboardPage() {
                 placeholder="Search for 'pothole', 'broken lamp'..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && fetchFeed()}
+                onKeyDown={(e) => e.key === "Enter" && fetchFeed(searchQuery)}
                 className="flex-1 text-sm px-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-indigo-400 bg-gray-50"
               />
-              <button onClick={() => fetchFeed()} className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
+              <button onClick={() => fetchFeed(searchQuery)} className="bg-indigo-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-indigo-700 transition">
                 Search
               </button>
             </div>
